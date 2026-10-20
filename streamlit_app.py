@@ -1,6 +1,10 @@
 import streamlit as st
 
-st.title("🎈 My new app")
+#----------
+
+st.title("Server Uptime Status")
 st.write(
-    "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
+    "aplicación para visualizar el **estado del servidor de Minecraft actual**.\n También se adjuntan el registro de los últimos periodos de mantenimiento."
 )
+
+st.divider()
