@@ -1,5 +1,34 @@
 from datetime import datetime
+import json
+import os
 import streamlit as st
+
+# --- File Persistence Setup ---
+STATE_FILE = "server_state.json"
+
+def load_state():
+    if os.path.exists(STATE_FILE):
+        try:
+            with open(STATE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {
+        "server_status": "Online",
+        "maintenance_logs": [
+            {
+                "date": "20/10/26 18:18",
+                "msg": "Servidor apagado debido a mantenimiento y uso del servidor para actividades extracurriculares.",
+            }
+        ]
+    }
+
+def save_state(status, logs):
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump({"server_status": status, "maintenance_logs": logs}, f, ensure_ascii=False, indent=4)
+
+# Load saved state into variables
+saved_data = load_state()
 
 # --- Page Setup ---
 st.set_page_config(
@@ -10,20 +39,13 @@ st.set_page_config(
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
-# Default Status: "Online", "Offline", or "Under Maintenance"
 if "server_status" not in st.session_state:
-    st.session_state.server_status = "Online"
+    st.session_state.server_status = saved_data["server_status"]
 
-# Initial Maintenance Logs
 if "maintenance_logs" not in st.session_state:
-    st.session_state.maintenance_logs = [
-        {
-            "date": "20/10/26 18:18",
-            "msg": "Servidor apagado debido a mantenimiento y uso del servidor para actividades extracurriculares.",
-        },
-    ]
+    st.session_state.maintenance_logs = saved_data["maintenance_logs"]
 
-# Server Details (Change these to your actual details)
+# Server Details
 SERVER_IP = "practically-xii.tun.ply.gg"
 SERVER_PORT = "25565"
 MODPACK_LINK = "lo tienes en el Whatsapp."
@@ -52,34 +74,41 @@ with st.sidebar.expander("🔒 Admin Panel", expanded=not st.session_state.authe
     else:
         st.write("🟢 **Logged in as Admin**")
 
-        # 1. Server Status Selector
-        st.divider()
-        st.write("### ⚙️ Update Server Status")
-        status_options = ["Online", "Offline", "Under Maintenance"]
-        selected_status = st.selectbox(
-            "Current State:",
-            options=status_options,
-            index=status_options.index(st.session_state.server_status),
-        )
-        if selected_status != st.session_state.server_status:
-            st.session_state.server_status = selected_status
-            st.toast(f"Status changed to {selected_status}!")
-            st.rerun()
+        # Admin Settings Form with Save Button
+        with st.form("admin_settings_form"):
+            st.write("### ⚙️ Update Server Status")
+            status_options = ["Online", "Offline", "Under Maintenance"]
+            
+            current_index = 0
+            if st.session_state.server_status in status_options:
+                current_index = status_options.index(st.session_state.server_status)
 
-        # 2. Add Maintenance Log Entry
-        st.divider()
-        st.write("### 📝 Post Maintenance Log")
-        log_input = st.text_area("Log Message", placeholder="e.g. Updating plugins and restarting server...")
-        if st.button("Post Log"):
-            if log_input.strip():
-                now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
-                st.session_state.maintenance_logs.insert(
-                    0, {"date": now_str, "msg": log_input.strip()}
-                )
-                st.success("Log entry posted!")
+            selected_status = st.selectbox(
+                "Current State:",
+                options=status_options,
+                index=current_index,
+            )
+
+            st.divider()
+            st.write("### 📝 Post Maintenance Log")
+            log_input = st.text_area("Log Message", placeholder="e.g. Updating plugins and restarting server...")
+            
+            # Save Button
+            save_button = st.form_submit_button("💾 Guardar Cambios")
+
+            if save_button:
+                st.session_state.server_status = selected_status
+                if log_input.strip():
+                    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+                    st.session_state.maintenance_logs.insert(
+                        0, {"date": now_str, "msg": log_input.strip()}
+                    )
+                
+                # Save to local JSON file so it persists on reload
+                save_state(st.session_state.server_status, st.session_state.maintenance_logs)
+                
+                st.success("¡Cambios guardados con éxito!")
                 st.rerun()
-            else:
-                st.warning("Please enter a log message first.")
 
         # 3. Log Out
         st.divider()
