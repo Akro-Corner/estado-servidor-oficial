@@ -3,7 +3,7 @@ import streamlit as st
 
 # --- Page Setup ---
 st.set_page_config(
-    page_title="Minecraft Server Hub", page_icon="⛏️", layout="centered"
+    page_title="Estado Actual Servidor", page_icon="⛏️", layout="centered"
 )
 
 # --- Initialize Session State ---
@@ -18,28 +18,24 @@ if "server_status" not in st.session_state:
 if "maintenance_logs" not in st.session_state:
     st.session_state.maintenance_logs = [
         {
-            "date": "2026-03-20 14:00",
-            "msg": "Server updated to Modpack v1.2! Added new tech mods and bug fixes.",
-        },
-        {
-            "date": "2026-03-15 10:30",
-            "msg": "Routine maintenance completed. World backup created.",
+            "date": "20/10/26 18:18",
+            "msg": "Servidor apagado debido a mantenimiento y uso del servidor para actividades extracurriculares.",
         },
     ]
 
 # Server Details (Change these to your actual details)
-SERVER_IP = "play.yourserver.com"
+SERVER_IP = "practically-xii.tun.ply.gg"
 SERVER_PORT = "25565"
-MODPACK_LINK = "https://your-modpack-download-link.com/modpack.zip"
+MODPACK_LINK = "lo tienes en el Whatsapp."
 
 # --- Sidebar Admin Panel ---
 with st.sidebar.expander("🔒 Admin Panel", expanded=not st.session_state.authenticated):
     if not st.session_state.authenticated:
-        st.write("Sign in to manage status and post logs.")
+        st.write("Incio de sesión")
         with st.form("admin_login_form"):
             user_input = st.text_input("Username")
             pass_input = st.text_input("Password", type="password")
-            if st.form_submit_button("Log In"):
+            if st.form_submit_button("Iniciar Sesión"):
                 try:
                     # Authenticate against st.secrets
                     secret_user = st.secrets["admin_credentials"]["username"]
@@ -47,10 +43,10 @@ with st.sidebar.expander("🔒 Admin Panel", expanded=not st.session_state.authe
 
                     if user_input == secret_user and pass_input == secret_pass:
                         st.session_state.authenticated = True
-                        st.success("Authenticated!")
+                        st.success("Autenticado")
                         st.rerun()
                     else:
-                        st.error("Invalid username or password.")
+                        st.error("Contraseña inválida")
                 except KeyError:
                     st.error("Admin secrets missing in `.streamlit/secrets.toml`!")
     else:
@@ -92,12 +88,12 @@ with st.sidebar.expander("🔒 Admin Panel", expanded=not st.session_state.authe
             st.rerun()
 
 # --- Main App Interface ---
-st.title("⛏️ Minecraft Server Hub")
-st.caption("Official server dashboard, modpack download, and maintenance tracker.")
+st.title("Monitor Servidor")
+st.caption("Monitor del servidor.")
 st.divider()
 
 # Section 1: Server IP & Status
-st.subheader("🌐 Server Address & Live Status")
+st.subheader("🌐 Estado y IP")
 
 col_ip, col_port = st.columns([3, 1])
 with col_ip:
@@ -109,26 +105,26 @@ current_status = st.session_state.server_status
 
 if current_status == "Online":
     st.success("### Status: 🟢 ONLINE")
-    st.write("The server is live! You can connect right now.")
+    st.write("Encendido y listo para entrar.")
 elif current_status == "Under Maintenance":
-    st.warning("### Status: 🛠️ UNDER MAINTENANCE")
-    st.info("The server is currently down for maintenance or updates. Check the logs below!")
+    st.warning("### Status: 🛠️ BAJO MANTENIMIENTO")
+    st.info("Servidor bajo mantenimiento, mirar registros para la hora de retorno.")
 else:
     st.error("### Status: 🔴 OFFLINE")
-    st.write("The server is currently offline.")
+    st.write("Servidor apagado.")
 
 st.divider()
 
 # Section 2: Modpack Download
-st.subheader("📦 Download Server Modpack")
+st.subheader("📦 Descargar Modpack Servidor")
 st.write("Download the required modpack file to connect and join the world.")
 
-st.link_button("📥 Download Modpack (.zip)", MODPACK_LINK, use_container_width=True)
+st.write("*GRUPO DE WHATSAPP*")
 
 st.divider()
 
 # Section 3: Maintenance & Update Logs
-st.subheader("📋 Maintenance Logs & Updates")
+st.subheader("📋 Mantenimiento y registros")
 
 if st.session_state.maintenance_logs:
     for entry in st.session_state.maintenance_logs:
@@ -136,7 +132,7 @@ if st.session_state.maintenance_logs:
             st.markdown(f"**`[{entry['date']}]`**")
             st.info(entry["msg"])
 else:
-    st.write("No maintenance logs recorded yet.")
+    st.write("Ningún registro de mantenimiento publicado.")
 
 st.divider()
 st.caption("Tip: Admins can log in using the sidebar panel to change status and publish update logs.")
